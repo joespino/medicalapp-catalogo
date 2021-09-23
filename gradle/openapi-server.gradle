@@ -1,0 +1,55 @@
+/*
+ * Plugin that provides API-first development using OpenAPI-generator to
+ * generate Spring-MVC endpoint stubs at compile time from an OpenAPI definition file
+ */
+apply plugin: "org.openapi.generator"
+apply plugin: "java"
+
+configurations {
+    openapiDependency { transitive = false }
+}
+
+dependencies {
+    openapiDependency "org.medicalapp.pe:openapi-spring-boot-starter:${springLibraryVersion}"
+}
+
+task copyOpenapiTemplates(type: Copy) {
+    from zipTree(configurations.openapiDependency.singleFile)
+    include 'mustache/*'
+    into "$buildDir${openapiTemplatesDir}"
+}
+
+processResources.dependsOn(copyOpenapiTemplates)
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/openapi/api.yml".toString()
+    outputDir = "$buildDir/openapi".toString()
+    templateDir = "$buildDir${openapiTemplatesDir}/mustache"
+    apiPackage = "${projectGroup}.${moduleName}.ws.rest"
+    modelPackage = "${projectGroup}.${moduleName}.ws.rest.model"
+    modelNameSuffix = "ControllerDto"
+    apiFilesConstrainedTo = [""]
+    modelFilesConstrainedTo = [""]
+    supportingFilesConstrainedTo = ["ApiUtil.java"]
+    configOptions = [library: "spring-boot", reactive: "true", delegatePattern: "true"]
+    validateSpec = true
+}
+
+task copyOpenapiResources(type: Copy) {
+    from "$rootDir/src/main/resources/openapi/api.yml"
+    into "$buildDir/resources/main/public"
+}
+
+processResources.finalizedBy copyOpenapiResources
+
+sourceSets {
+    main {
+        java {
+            srcDir file("${project.buildDir.path}/openapi/src/main/java")
+        }
+    }
+}
+
+compileJava.dependsOn("openApiGenerate")
+compileJava.mustRunAfter(processResources)

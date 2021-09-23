@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: catalogo
+  profiles:
+    active: local
+  data:
+    mongodb:
+      uri: mongodb://root:rootPassword@ec2-52-73-50-146.compute-1.amazonaws.com:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false
+      database: dbCatalogo
+
+application:
+  openapi:
+    url: /medicalapp/interfaz
+  locale:
+    language: es
+    country: PE
+  time:
+    zoneId: America/Lima # UTC, Europe/Amsterdam, America/Lima
+
+server:
+  port: 7102
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,prometheus

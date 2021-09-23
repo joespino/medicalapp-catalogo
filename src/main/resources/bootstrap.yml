@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: catalogo
+  profiles:
+    active: local
+ 
+---
+spring:
+  profiles: local
+  cloud:
+    vault:
+      enabled: false
+    consul:
+      enabled: false

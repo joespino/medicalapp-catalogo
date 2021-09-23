@@ -1,0 +1,133 @@
+plugins {
+    id "java"
+    id "idea"
+    id "eclipse"
+    id 'maven'
+    id 'jacoco'
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDepMngmntVersion}"
+    id "org.openapi.generator" version "${openApiGeneratorVersion}"
+    id "org.sonarqube" version "${sonarPluginVersioon}"
+    id 'org.asciidoctor.jvm.pdf' version "${asciidoctorPluginVersion}"
+    id 'org.asciidoctor.jvm.gems' version "${asciidoctorPluginVersion}"
+    id "com.jfrog.artifactory" version "${artifactoryPluginVersion}"
+}
+
+artifactory {
+    // the base Artifactory URL if not overridden by the publisher/resolver
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            // define if snapshot or release repository should be used for the deploy
+            def repositoryKey = version.endsWith("SNAPSHOT") ? "gradle-dev-local" : "gradle-release-local"
+            println "Publishing ${project.name} version ${version} into ${repositoryKey}"
+
+            repoKey = repositoryKey
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+        defaults { publications ('mavenJava') }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    gradlePluginPortal()
+    maven { url "https://repo.spring.io/plugins-release" }
+    maven { url "https://repository.jboss.org/nexus/content/repositories/ea/" }
+    maven {
+        url 'http://ec2-54-211-110-169.compute-1.amazonaws.com:8081/artifactory/gradle-dev/'
+        credentials {
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+        }
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
+apply from: "gradle/sonar.gradle"
+apply from: "gradle/asciidoc.gradle"
+apply from: "gradle/openapi-server.gradle"
+
+group = "${projectGroup}"
+version = "${projectVersion}"
+description = "${projectDescription}"
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+apply plugin: 'maven-publish'
+
+dependencies {
+    implementation platform("org.medicalapp.pe:spring-boot-dependencies:${springLibraryVersion}"){
+        exclude group: "org.medicalapp.pe", module: "kafka-spring-boot-starter"
+    }
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-consul-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-vault-config'
+
+    implementation 'org.medicalapp.pe:webflux-spring-boot-starter'
+    implementation 'org.medicalapp.pe:logging-spring-boot-starter'
+    implementation 'org.medicalapp.pe:metrics-spring-boot-starter'
+    implementation 'org.medicalapp.pe:openapi-spring-boot-starter'
+
+    implementation 'org.medicalapp.pe:mongo-spring-boot-starter'
+    implementation 'org.medicalapp.pe:core-spring-boot-starter'
+
+    implementation "io.micrometer:micrometer-registry-prometheus"
+    implementation("com.github.javafaker:javafaker") { exclude group: 'org.yaml' }
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    compileOnly "org.mapstruct:mapstruct"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo"
+    testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '4.0.1'
+    testImplementation 'com.squareup.okhttp3:okhttp:4.0.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            // publish generated jar file
+            //from components.java
+            artifacts {
+                archives(file("${buildDir}/libs/${group}-${version}.jar"))
+            }
+        }
+    }
+}

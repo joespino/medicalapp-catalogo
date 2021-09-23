@@ -1,0 +1,78 @@
+openapi: 3.0.0
+info:
+  title: Listar Catalogos
+  description: Listar los Catalogos
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:{port}/medicalapp/interfaz/e'
+    variables:
+      port:
+        default: '7001'
+        description: Localhost Port used
+    description: Local Server
+tags:
+  - name: Catalogos
+    description: Everything about Catalogos
+paths:
+  '/catalogos/{id}':
+    get:
+      summary: Listar Catalogos
+      tags:
+        - Catalogos
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DuoDTO'
+        default:
+          description: Errores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      operationId: obtenerCatalogos
+      description: Operación que permite obtener la información para llenar combos
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+        description: Id del catalogo
+components:
+  schemas:
+    DuoDTO:
+      title: DuoDTO
+      type: object
+      properties:
+        codigo:
+          type: string
+          description: Código a asociar en el combo en pantalla
+        valor:
+          type: string
+          description: Nombre a mostrar en el combo en pantalla
+      required:
+        - codigo
+        - valor
+      x-examples:
+        example-1:
+          codigo: string
+          valor: string
+    Error:
+      title: Error
+      type: object
+      properties:
+        cod:
+          type: string
+          description: Es el codigo de error generico 500 para este tipo de Errores.
+          default: '500'
+        msg:
+          type: string
+          description: Contiene el mensaje de error asociado al codigo de error 500 (Ver Errores Http)
+        exc:
+          type: string
+          description: Contiene el stack trace del Error
