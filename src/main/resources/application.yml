@@ -16,6 +16,17 @@ application:
     country: PE
   time:
     zoneId: America/Lima # UTC, Europe/Amsterdam, America/Lima
+  security:
+    jwt:
+      rely-enabled: false
+      publicKey: |
+        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlBDKc0CCBe80jp9WW5dC
+        KCMb5dk9J6koCRKdSgTTIJYtGCoThJgQDTvady/5nj3iJ46IqK1R6T7lRSCmpW9d
+        rS0B/it56acnHUi91k+GhZ6Hv0tXNczdrzFszKUKjEvVA8+Mm3FCAgGYlHGo9ycO
+        9CkaHu4uy3PyM2dhUov35i+BYTEyzp7uphYvo00Sk5uD2zN6O1DDbHXCoTEHQg1T
+        h54AXcto+xM64ietP1rFNvIUHfQB+AbMgG7W8+iACGjYDMrnUc8mJ1o/K9BWIGl9
+        Fr+Ka+86XgMzThlDeg6sqxlA/E3NrIOd7w/JeeUF47rcEZVm0Nyt8VjV2Gt219dJ
+        lwIDAQAB
 
 server:
   port: 7102

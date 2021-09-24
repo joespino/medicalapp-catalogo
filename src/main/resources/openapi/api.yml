@@ -35,7 +35,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
       operationId: obtenerCatalogos
-      description: Operación que permite obtener la información para llenar combos
+      description: Operacion que permite obtener la informacion para llenar combos
     parameters:
       - schema:
           type: string
